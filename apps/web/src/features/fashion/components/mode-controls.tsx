@@ -34,9 +34,9 @@ export default function ModeControls({
 	onVariationCountChange,
 }: ModeControlsProps) {
 	return (
-		<section className="rounded-xl border p-4">
-			<h3 className="text-lg font-semibold">3. Edit & Variation Mode</h3>
-			<p className="text-sm text-muted-foreground">
+		<section className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+			<h3 className="text-lg font-semibold text-slate-900">3. Edit & Variation Mode</h3>
+			<p className="text-sm text-slate-600">
 				Choose whether to create a new output, edit an existing result, or generate variations.
 			</p>
 
@@ -45,7 +45,7 @@ export default function ModeControls({
 					<button
 						type="button"
 						key={mode}
-						className={`rounded-md border px-3 py-2 text-sm capitalize ${task === mode ? "bg-primary text-primary-foreground" : ""}`}
+						className={`rounded-lg border px-3 py-2 text-sm font-medium capitalize transition-colors ${task === mode ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`}
 						onClick={() => onTaskChange(mode)}
 					>
 						{mode}
@@ -55,15 +55,17 @@ export default function ModeControls({
 
 			{task === "edit" ? (
 				<div className="mt-4 space-y-2">
-					<Label htmlFor="edit-instruction">Edit Instruction</Label>
+					<Label htmlFor="edit-instruction" className="text-slate-700">
+						Edit Instruction
+					</Label>
 					<textarea
 						id="edit-instruction"
-						className="bg-background min-h-24 w-full rounded-md border px-3 py-2 text-sm"
+						className="min-h-24 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400"
 						placeholder="Example: keep same garment, switch to warmer studio lighting and a walking pose."
 						value={editInstruction}
 						onChange={(event) => onEditInstructionChange(event.target.value)}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-xs text-slate-500">
 						Edit source image: {editSourceImage ? "Selected from history" : "Not selected"}
 					</p>
 				</div>
@@ -72,10 +74,10 @@ export default function ModeControls({
 			{task === "variation" ? (
 				<div className="mt-4 grid gap-3 md:grid-cols-2">
 					<div className="space-y-1.5">
-						<Label>Variation Focus</Label>
+						<Label className="text-slate-700">Variation Focus</Label>
 						<select
 							value={variationFocus}
-							className="bg-background w-full rounded-md border px-3 py-2 text-sm"
+							className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400"
 							onChange={(event) => onVariationFocusChange(event.target.value as VariationFocus)}
 						>
 							{variationFocusOptions.map((focus) => (
@@ -86,14 +88,16 @@ export default function ModeControls({
 						</select>
 					</div>
 					<div className="space-y-1.5">
-						<Label htmlFor="variation-count">Variation Count</Label>
+						<Label htmlFor="variation-count" className="text-slate-700">
+							Variation Count
+						</Label>
 						<input
 							id="variation-count"
 							type="number"
 							min={2}
 							max={8}
 							value={variationCount}
-							className="bg-background w-full rounded-md border px-3 py-2 text-sm"
+							className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400"
 							onChange={(event) => onVariationCountChange(Number(event.target.value))}
 						/>
 					</div>

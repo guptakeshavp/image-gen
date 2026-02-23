@@ -19,13 +19,15 @@ async function fileToDataUrl(file: File) {
 
 export default function FabricUpload({ fabric, onUpload }: FabricUploadProps) {
 	return (
-		<section className="rounded-xl border p-4">
-			<h3 className="text-lg font-semibold">1. Fabric Upload</h3>
-			<p className="text-sm text-muted-foreground">
+		<section className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+			<h3 className="text-lg font-semibold text-slate-900">1. Fabric Upload</h3>
+			<p className="text-sm text-slate-600">
 				Upload the fabric/design image that will define texture, print, and color fidelity.
 			</p>
 			<div className="mt-3 space-y-2">
-				<Label htmlFor="fabric-upload">Fabric Image</Label>
+				<Label htmlFor="fabric-upload" className="text-slate-700">
+					Fabric Image
+				</Label>
 				<Input
 					id="fabric-upload"
 					type="file"
@@ -45,13 +47,13 @@ export default function FabricUpload({ fabric, onUpload }: FabricUploadProps) {
 			</div>
 			{fabric ? (
 				<div className="mt-4 space-y-2">
-					<p className="text-sm text-muted-foreground">
+					<p className="text-sm text-slate-600">
 						{fabric.name} ({Math.ceil(fabric.sizeBytes / 1024)} KB)
 					</p>
 					<img
 						src={fabric.dataUrl}
 						alt="Uploaded fabric preview"
-						className="h-48 w-full rounded-md border object-cover"
+						className="h-48 w-full rounded-lg border border-slate-200 object-cover shadow-sm"
 					/>
 				</div>
 			) : null}

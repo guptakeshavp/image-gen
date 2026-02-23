@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import FabricUpload from "./components/fabric-upload";
 import ImageHistoryGallery from "./components/image-history-gallery";
 import ModeControls from "./components/mode-controls";
 import PresetSelection from "./components/preset-selection";
-import { buildPromptPayload } from "./prompt-builder";
+import { downloadImageFromUrl } from "./download";
 import { defaultGeneratorState } from "./state";
 import type { GenerationHistoryItem, GeneratorState } from "./types";
 
@@ -18,9 +18,6 @@ export default function FashionStudio() {
 	const [history, setHistory] = useState<GenerationHistoryItem[]>([]);
 	const [latestImages, setLatestImages] = useState<string[]>([]);
 	const [lastError, setLastError] = useState<string | null>(null);
-	const [showPromptPreview, setShowPromptPreview] = useState(false);
-
-	const promptPreview = useMemo(() => buildPromptPayload(state), [state]);
 
 	async function handleGenerate() {
 		try {
@@ -51,30 +48,43 @@ export default function FashionStudio() {
 		}
 	}
 
+	async function handleDownloadLatestImage(imageUrl: string, index: number) {
+		const timestamp = new Date().toISOString().replaceAll(":", "-");
+		const didDirectDownload = await downloadImageFromUrl(
+			imageUrl,
+			`fashion-latest-${index + 1}-${timestamp}.png`,
+		);
+		if (didDirectDownload) {
+			toast.success("Image downloaded");
+			return;
+		}
+		toast.info("Opened image in a new tab. Save from browser if auto-download is blocked.");
+	}
+
 	return (
-		<div className="mx-auto w-full max-w-7xl space-y-5 px-4 py-4">
-			<section className="rounded-xl border p-4">
-				<h1 className="text-2xl font-bold">Fashion Image Generation Tool</h1>
-				<p className="text-sm text-muted-foreground">
+		<div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6">
+			<section className="from-amber-50 to-sky-50/70 rounded-2xl border border-amber-200/70 bg-gradient-to-br p-6 shadow-sm">
+				<h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Fashion Image Generation Tool</h1>
+				<p className="mt-2 text-sm text-slate-600">
 					Structured fashion prompt workflow using OpenRouter model configured in server{" "}
 					<code>.env</code>.
 				</p>
-				<div className="mt-3 rounded-md border p-3 text-sm">
-					<p className="font-medium">How to submit</p>
-					<p className="text-muted-foreground">
+				<div className="mt-4 rounded-xl border border-amber-200 bg-white/85 p-4 text-sm shadow-sm">
+					<p className="font-semibold text-slate-900">How to submit</p>
+					<p className="mt-1 text-slate-600">
 						1) Upload fabric image, 2) choose presets, 3) click <strong>Generate Images</strong>.
 						Selected options are submitted automatically.
 					</p>
 				</div>
 				{lastError ? (
-					<div className="mt-3 rounded-md border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-600">
+					<div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
 						{lastError}
 					</div>
 				) : null}
 			</section>
 
-			<div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-				<div className="space-y-5">
+			<div className="grid gap-6 lg:grid-cols-[1.12fr_0.88fr]">
+				<div className="space-y-6">
 					<FabricUpload
 						fabric={state.uploaded_fabric}
 						onUpload={(uploaded_fabric) => setState((prev) => ({ ...prev, uploaded_fabric }))}
@@ -105,25 +115,11 @@ export default function FashionStudio() {
 							}))
 						}
 					/>
-					<section className="rounded-xl border p-4">
-						<div className="flex items-center justify-between gap-3">
-							<h3 className="text-lg font-semibold">4. Prompt Builder</h3>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setShowPromptPreview((prev) => !prev)}
-							>
-								{showPromptPreview ? "Hide Prompt JSON" : "Show Prompt JSON"}
-							</Button>
-						</div>
-						<p className="mt-2 text-sm text-muted-foreground">
-							This converts your selected options into a structured AI prompt payload.
+					<section className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+						<h3 className="text-lg font-semibold text-slate-900">4. Generate</h3>
+						<p className="mt-2 text-sm text-slate-600">
+							When ready, generate images using your selected options.
 						</p>
-						{showPromptPreview ? (
-							<pre className="bg-muted mt-3 overflow-auto rounded-md p-3 text-xs">
-								{JSON.stringify(promptPreview, null, 2)}
-							</pre>
-						) : null}
 						<Button
 							type="button"
 							className="mt-4 w-full"
@@ -133,34 +129,44 @@ export default function FashionStudio() {
 							{isGenerating ? "Generating..." : "5. Generate Images"}
 						</Button>
 						{!state.uploaded_fabric ? (
-							<p className="mt-2 text-xs text-muted-foreground">
+							<p className="mt-2 text-xs text-slate-500">
 								Upload a fabric image to enable generation.
 							</p>
 						) : null}
 					</section>
 				</div>
 
-				<div className="space-y-5">
-					<section className="rounded-xl border p-4">
-						<h3 className="text-lg font-semibold">Latest Output</h3>
+				<div className="space-y-6">
+					<section className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+						<h3 className="text-lg font-semibold text-slate-900">Latest Output</h3>
 						{isGenerating ? (
 							<div className="mt-3 grid grid-cols-2 gap-3">
-								<div className="bg-muted h-40 animate-pulse rounded-md" />
-								<div className="bg-muted h-40 animate-pulse rounded-md" />
+								<div className="h-40 animate-pulse rounded-lg bg-slate-100" />
+								<div className="h-40 animate-pulse rounded-lg bg-slate-100" />
 							</div>
 						) : latestImages.length > 0 ? (
-							<div className="mt-3 grid grid-cols-2 gap-3">
-								{latestImages.map((imageUrl) => (
-									<img
-										key={imageUrl}
-										src={imageUrl}
-										alt="Latest generated fashion image"
-										className="h-48 w-full rounded-md border object-cover"
-									/>
+							<div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+								{latestImages.map((imageUrl, index) => (
+									<div key={imageUrl} className="space-y-2">
+										<img
+											src={imageUrl}
+											alt="Latest generated fashion image"
+											className="h-48 w-full rounded-lg border border-slate-200 object-cover shadow-sm"
+										/>
+										<Button
+											type="button"
+											size="sm"
+											variant="outline"
+											className="w-full"
+											onClick={() => void handleDownloadLatestImage(imageUrl, index)}
+										>
+											Download
+										</Button>
+									</div>
 								))}
 							</div>
 						) : (
-							<p className="mt-2 text-sm text-muted-foreground">
+							<p className="mt-2 text-sm text-slate-500">
 								Generate an image to see the latest output.
 							</p>
 						)}

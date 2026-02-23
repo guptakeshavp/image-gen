@@ -18,9 +18,9 @@ type SelectFieldProps = {
 function SelectField({ label, value, options, onChange }: SelectFieldProps) {
 	return (
 		<div className="space-y-1.5">
-			<Label>{label}</Label>
+			<Label className="text-slate-700">{label}</Label>
 			<select
-				className="bg-background w-full rounded-md border px-3 py-2 text-sm"
+				className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400"
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
 			>
@@ -36,9 +36,9 @@ function SelectField({ label, value, options, onChange }: SelectFieldProps) {
 
 export default function PresetSelection({ value, onChange }: PresetSelectionProps) {
 	return (
-		<section className="rounded-xl border p-4">
-			<h3 className="text-lg font-semibold">2. Preset Selection</h3>
-			<p className="text-sm text-muted-foreground">
+		<section className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+			<h3 className="text-lg font-semibold text-slate-900">2. Preset Selection</h3>
+			<p className="text-sm text-slate-600">
 				Select garment, model, scene, and photography attributes.
 			</p>
 			<div className="mt-3 grid gap-3 md:grid-cols-2">

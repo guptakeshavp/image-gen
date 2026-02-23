@@ -6,7 +6,7 @@ export const presetOptions = {
 	genders: ["Female", "Male", "Unisex"],
 	ageRanges: ["18-24", "25-34", "35-44", "45-60"],
 	bodyTypes: ["Slim", "Athletic", "Curvy", "Plus size"],
-	ethnicities: ["South Asian", "East Asian", "Black", "White", "Latina", "Middle Eastern"],
+	ethnicities: ["Indian", "South Asian", "East Asian", "Black", "White", "Latina", "Middle Eastern"],
 	locationSettings: [
 		"Minimal studio backdrop",
 		"Luxury boutique interior",
@@ -35,7 +35,7 @@ export const defaultSelections: PresetSelections = {
 	gender: "Female",
 	age_range: "25-34",
 	body_type: "Athletic",
-	ethnicity: "South Asian",
+	ethnicity: "Indian",
 	location_setting: "Minimal studio backdrop",
 	pose: "Confident standing pose",
 	photography_style: "Commercial e-commerce clean light",
