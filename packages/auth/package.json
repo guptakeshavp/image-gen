@@ -1,0 +1,24 @@
+{
+  "name": "@image-gen/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@image-gen/db": "workspace:*",
+    "@image-gen/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@image-gen/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

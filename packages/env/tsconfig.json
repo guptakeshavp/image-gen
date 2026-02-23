@@ -1,0 +1,3 @@
+{
+  "extends": "@image-gen/config/tsconfig.base.json"
+}
