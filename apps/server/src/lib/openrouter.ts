@@ -17,6 +17,8 @@ type OpenRouterGenerateArgs = {
 	image_size?: ImageSize;
 };
 
+type OutputModalities = Array<"image" | "text">;
+
 type OpenRouterApiResponse = {
 	id?: string;
 	created?: number;
@@ -111,9 +113,8 @@ export async function generateWithOpenRouter({
 		},
 	];
 
-	const requestBody = {
+	const requestBase = {
 		model: selectedModel,
-		modalities: ["image", "text"],
 		messages: [
 			{
 				role: "user",
@@ -124,28 +125,57 @@ export async function generateWithOpenRouter({
 		...(image_size ? { image_config: { size: image_size } } : {}),
 	};
 
-	const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-			"Content-Type": "application/json",
-			...(env.OPENROUTER_SITE_URL ? { "HTTP-Referer": env.OPENROUTER_SITE_URL } : {}),
-			...(env.OPENROUTER_SITE_NAME ? { "X-Title": env.OPENROUTER_SITE_NAME } : {}),
-		},
-		body: JSON.stringify(requestBody),
-	});
+	const sendRequest = async (modalities: OutputModalities) => {
+		const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
+				"Content-Type": "application/json",
+				...(env.OPENROUTER_SITE_URL ? { "HTTP-Referer": env.OPENROUTER_SITE_URL } : {}),
+				...(env.OPENROUTER_SITE_NAME ? { "X-Title": env.OPENROUTER_SITE_NAME } : {}),
+			},
+			body: JSON.stringify({
+				...requestBase,
+				modalities,
+			}),
+		});
 
-	const rawText = await response.text();
-	let data: OpenRouterApiResponse = {};
-	try {
-		data = JSON.parse(rawText) as OpenRouterApiResponse;
-	} catch {
-		// Leave as empty object and include raw body in the error path below.
+		const rawText = await response.text();
+		let data: OpenRouterApiResponse = {};
+		try {
+			data = JSON.parse(rawText) as OpenRouterApiResponse;
+		} catch {
+			// Leave as empty object and include raw body in the error path below.
+		}
+
+		return { response, rawText, data };
+	};
+
+	let { response, rawText, data } = await sendRequest(["image", "text"]);
+
+	if (!response.ok) {
+		const message = data.error?.message ?? rawText ?? "OpenRouter request failed";
+		const noEndpointForRequestedModalities =
+			response.status === 404 &&
+			message.includes("No endpoints found that support the requested output modalities");
+
+		// Some image models support image-only output. Retry once with ["image"].
+		if (noEndpointForRequestedModalities) {
+			const retry = await sendRequest(["image"]);
+			response = retry.response;
+			rawText = retry.rawText;
+			data = retry.data;
+		}
 	}
 
 	if (!response.ok) {
 		const message = data.error?.message ?? rawText ?? "OpenRouter request failed";
-		throw new Error(`OpenRouter request failed (${response.status}): ${message}`);
+		const modelHint =
+			response.status === 404 &&
+			message.includes("No endpoints found that support the requested output modalities")
+				? ` Check OPENROUTER_MODEL (${selectedModel}) and pick a model whose output_modalities include image generation.`
+				: "";
+		throw new Error(`OpenRouter request failed (${response.status}): ${message}${modelHint}`);
 	}
 
 	const firstChoice = data.choices?.[0];
