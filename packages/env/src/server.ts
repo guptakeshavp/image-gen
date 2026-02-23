@@ -3,6 +3,7 @@ import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
 export const env = createEnv({
+  clientPrefix: "VITE_",
   server: {
     DATABASE_URL: z.string().min(1),
     DATABASE_AUTH_TOKEN: z.string().min(1),
@@ -15,6 +16,6 @@ export const env = createEnv({
     OPENROUTER_SITE_NAME: z.string().min(1).optional(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   },
-  runtimeEnv: process.env,
+  runtimeEnv: (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {},
   emptyStringAsUndefined: true,
 });

@@ -1,3 +1,6 @@
 {
-  "extends": "@image-gen/config/tsconfig.base.json"
+  "extends": "@image-gen/config/tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  }
 }
