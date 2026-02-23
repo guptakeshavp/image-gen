@@ -1,4 +1,3 @@
-import { auth } from "@image-gen/auth";
 import { env } from "@image-gen/env/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -10,20 +9,33 @@ import { buildPromptPayload, promptRequestSchema } from "@/lib/prompt-builder";
 
 const app = new Hono();
 
+function isAuthConfigured() {
+  return Boolean(
+    env.DATABASE_URL &&
+      env.BETTER_AUTH_SECRET &&
+      env.BETTER_AUTH_URL &&
+      env.CORS_ORIGIN,
+  );
+}
+
 app.use(logger());
 app.use(
   "/*",
   cors({
     origin: (origin) => {
-      if (!origin) return env.CORS_ORIGIN;
-      if (origin === env.CORS_ORIGIN) return origin;
+      const configuredOrigin = env.CORS_ORIGIN || undefined;
+      if (!configuredOrigin) {
+        return origin ?? "*";
+      }
+      if (!origin) return configuredOrigin;
+      if (origin === configuredOrigin) return origin;
       if (env.NODE_ENV !== "production") {
         // Allow local dev hosts/ports without forcing a single frontend port.
         if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
           return origin;
         }
       }
-      return env.CORS_ORIGIN;
+      return configuredOrigin;
     },
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
@@ -31,7 +43,20 @@ app.use(
   }),
 );
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+app.on(["POST", "GET"], "/api/auth/*", async (c) => {
+  if (!isAuthConfigured()) {
+    return c.json(
+      {
+        error:
+          "Auth is not configured. Set DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL, and CORS_ORIGIN.",
+      },
+      503,
+    );
+  }
+
+  const { auth } = await import("@image-gen/auth");
+  return auth.handler(c.req.raw);
+});
 
 app.post("/api/image/prompt", async (c) => {
 	try {
